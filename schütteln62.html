@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Grammatik: Schüttelsätze</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary-color); font-style: normal; }
+
+        .instruction {
+            background: #eef7ff;
+            padding: 20px;
+            border-left: 6px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-card {
+            border: 1px solid #e1e8ed;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 40px;
+            background: #fff;
+        }
+
+        .scrambled-area, .result-area {
+            min-height: 60px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            background-color: #fdfdfd;
+        }
+
+        .result-area {
+            border: 2px dashed var(--secondary-color);
+            background-color: #fff;
+        }
+
+        .word-chip {
+            background: white;
+            border: 2px solid var(--secondary-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .word-chip:hover {
+            background: #f0f7ff;
+            transform: translateY(-2px);
+        }
+
+        .word-chip.used {
+            display: none;
+        }
+
+        /* Status Farben */
+        .result-area.is-correct {
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+
+        .result-area.is-wrong {
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        .button-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .main-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .btn-reset { background: #6c757d; }
+        .btn-solution { background: var(--secondary-color); }
+
+        .label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .word-chip { font-size: 0.9rem; padding: 6px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Schüttelsätze (Sentence Scrambler)</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Bringen Sie die Wörter in die richtige Reihenfolge, um einen grammatikalisch korrekten russischen Satz zu bilden. 
+        Klicken Sie auf die Wörter im oberen Bereich, um sie dem Satz hinzuzufügen. Klicken Sie auf ein Wort im Satz, um es wieder zu entfernen.
+    </div>
+
+    <div id="exercise-list">
+        <!-- Inhalte werden per JS generiert -->
+    </div>
+</div>
+
+<script>
+    const tasks = [
+        { id: 1, words: ["Во", "многих", "странах", "мира", "говорят", "по-русски"], correct: "Во многих странах мира говорят по-русски" },
+        { id: 2, words: ["Сегодня", "на", "концерте", "было", "очень", "много", "людей"], correct: "Сегодня на концерте было очень много людей" },
+        { id: 3, words: ["Многие", "студенты", "нашего", "университета", "живут", "в", "общежитии"], correct: "Многие студенты нашего университета живут в общежитии" },
+        { id: 4, words: ["Мы", "знакомы", "со", "многими", "интересными", "людьми"], correct: "Мы знакомы со многими интересными людьми" },
+        { id: 5, words: ["В", "библиотеке", "нет", "большого", "количества", "новых", "книг"], correct: "В библиотеке нет большого количества новых книг" },
+        { id: 6, words: ["Он", "рассказал", "нам", "о", "многих", "своих", "проблемах"], correct: "Он рассказал нам о многих своих проблемах" },
+        { id: 7, words: ["Мы", "доверяем", "многим", "экспертам", "в", "этой", "области"], correct: "Мы доверяем многим экспертам в этой области" },
+        { id: 8, words: ["Многие", "из", "моих", "друзей", "любят", "классическую", "музыку"], correct: "Многие из моих друзей любят классическую музыку" },
+        { id: 9, words: ["В", "городе", "построили", "много", "современных", "торговых", "центров"], correct: "В городе построили много современных торговых центров" },
+        { id: 10, words: ["Я", "купил", "много", "свежих", "фруктов", "на", "рынке"], correct: "Я купил много свежих фруктов на рынке" }
+    ];
+
+    let userAnswers = {};
+
+    function initTasks() {
+        const list = document.getElementById('exercise-list');
+        list.innerHTML = '';
+        tasks.forEach((task, index) => {
+            userAnswers[task.id] = [];
+            const card = document.createElement('div');
+            card.className = 'exercise-card';
+            card.innerHTML = `
+                <div style="margin-bottom: 15px; font-weight: bold; color: var(--secondary-color);">Aufgabe ${index + 1}</div>
+                <div class="label">Verfügbare Wörter:</div>
+                <div class="scrambled-area" id="pool-${task.id}"></div>
+                <div class="label">Ihr Satz:</div>
+                <div class="result-area" id="result-${task.id}"></div>
+                <div class="button-bar">
+                    <button class="main-btn btn-reset" onclick="resetTask(${task.id})">Zurücksetzen</button>
+                    <button class="main-btn btn-solution" onclick="showSolution(${task.id})">Lösung anzeigen</button>
+                </div>
+            `;
+            list.appendChild(card);
+            fillPool(task.id);
+        });
+    }
+
+    function fillPool(taskId) {
+        const pool = document.getElementById(`pool-${taskId}`);
+        const task = tasks.find(t => t.id === taskId);
+        pool.innerHTML = '';
+        
+        // Wörter mischen
+        const shuffled = [...task.words].sort(() => Math.random() - 0.5);
+        
+        shuffled.forEach((word, idx) => {
+            const chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.innerText = word;
+            chip.onclick = () => addToResult(taskId, word, chip);
+            pool.appendChild(chip);
+        });
+    }
+
+    function addToResult(taskId, word, chip) {
+        const resultArea = document.getElementById(`result-${taskId}`);
+        const task = tasks.find(t => t.id === taskId);
+
+        // Chip im Pool verstecken
+        chip.style.display = 'none';
+
+        // Wort zur Benutzerantwort hinzufügen
+        const resultChip = document.createElement('div');
+        resultChip.className = 'word-chip';
+        resultChip.innerText = word;
+        resultChip.onclick = () => {
+            resultChip.remove();
+            chip.style.display = 'block';
+            updateFeedback(taskId);
+        };
+        resultArea.appendChild(resultChip);
+        
+        updateFeedback(taskId);
+    }
+
+    function updateFeedback(taskId) {
+        const resultArea = document.getElementById(`result-${taskId}`);
+        const task = tasks.find(t => t.id === taskId);
+        const currentWords = Array.from(resultArea.querySelectorAll('.word-chip')).map(c => c.innerText);
+        const currentSentence = currentWords.join(' ');
+
+        resultArea.classList.remove('is-correct', 'is-wrong');
+
+        if (currentWords.length === task.words.length) {
+            if (currentSentence === task.correct) {
+                resultArea.classList.add('is-correct');
+            } else {
+                resultArea.classList.add('is-wrong');
+            }
+        }
+    }
+
+    window.resetTask = function(taskId) {
+        const resultArea = document.getElementById(`result-${taskId}`);
+        resultArea.innerHTML = '';
+        resultArea.classList.remove('is-correct', 'is-wrong');
+        fillPool(taskId);
+    };
+
+    window.showSolution = function(taskId) {
+        const task = tasks.find(t => t.id === taskId);
+        const resultArea = document.getElementById(`result-${taskId}`);
+        const pool = document.getElementById(`pool-${taskId}`);
+        
+        resultArea.innerHTML = '';
+        task.correct.split(' ').forEach(word => {
+            const chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.innerText = word;
+            resultArea.appendChild(chip);
+        });
+        
+        pool.querySelectorAll('.word-chip').forEach(c => c.style.display = 'none');
+        resultArea.classList.add('is-correct');
+        resultArea.classList.remove('is-wrong');
+    };
+
+    document.addEventListener('DOMContentLoaded', initTasks);
+</script>
+
+</body>
+</html>
