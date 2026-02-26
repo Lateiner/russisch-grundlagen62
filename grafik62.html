@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Grammatik: Interaktive Info-Grafik</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e67e22;
+            --success-color: #28a745;
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        * { font-style: normal !important; }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary-color); margin-bottom: 20px; }
+
+        .instruction {
+            background: #eef7ff;
+            padding: 15px;
+            border-left: 6px solid var(--secondary-color);
+            margin-bottom: 40px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* Grafik Bereich */
+        .exploration-area {
+            position: relative;
+            width: 100%;
+            height: 500px; /* Feste Höhe für Desktop */
+            margin: 0 auto 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .center-node {
+            width: 140px;
+            height: 140px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .case-bubble {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 3px solid white;
+            /* Zentrierung der Blase auf ihrem Ankerpunkt */
+            transform: translate(-50%, -50%);
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            will-change: transform;
+            z-index: 5;
+        }
+
+        /* Desktop-Positionen (Radial um die Mitte) */
+        .b1 { top: 10%; left: 50%; } /* Nominativ */
+        .b2 { top: 25%; left: 85%; } /* Genitiv */
+        .b3 { top: 75%; left: 85%; } /* Dativ */
+        .b4 { top: 90%; left: 50%; } /* Akkusativ */
+        .b5 { top: 75%; left: 15%; } /* Instrumental */
+        .b6 { top: 25%; left: 15%; } /* Präpositional */
+
+        .case-bubble:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background-color: var(--accent-color);
+            z-index: 15;
+        }
+
+        .case-bubble.active {
+            background-color: var(--accent-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        /* Info Panel */
+        .info-panel {
+            background: #fff;
+            border: 2px solid var(--secondary-color);
+            border-radius: 12px;
+            padding: 25px;
+            min-height: 150px;
+            display: none;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-panel h3 {
+            color: var(--secondary-color);
+            margin: 0 0 10px 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .example-box {
+            background: #f8f9fa;
+            border-left: 4px solid var(--success-color);
+            padding: 12px;
+            margin-top: 15px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Responsive Anpassungen */
+        @media (max-width: 768px) {
+            .exploration-area {
+                height: auto;
+                display: block;
+                padding: 10px;
+            }
+            .center-node {
+                width: 100%;
+                height: auto;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+                transform: none;
+            }
+            .case-bubble {
+                position: relative;
+                width: 100%;
+                height: auto;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 15px 20px;
+            }
+            .case-bubble:hover {
+                transform: none !important;
+            }
+            .case-bubble br {
+                display: none;
+            }
+            .case-bubble::after {
+                content: "➔";
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Exploration: Das Wort МНОГО in allen Fällen</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Klicken Sie auf die <strong>Fall-Blasen</strong>, um zu erfahren, wie МНОГО in den indirekten Fällen verändert oder ersetzt wird.
+    </div>
+
+    <div class="exploration-area">
+        <div class="center-node">МНОГО</div>
+        
+        <div class="case-bubble b1" onclick="showDetails('nom', this)">1. Fall<br>Nominativ</div>
+        <div class="case-bubble b2" onclick="showDetails('gen', this)">2. Fall<br>Genitiv</div>
+        <div class="case-bubble b3" onclick="showDetails('dat', this)">3. Fall<br>Dativ</div>
+        <div class="case-bubble b4" onclick="showDetails('acc', this)">4. Fall<br>Akkusativ</div>
+        <div class="case-bubble b5" onclick="showDetails('ins', this)">5. Fall<br>Instrumental</div>
+        <div class="case-bubble b6" onclick="showDetails('pre', this)">6. Fall<br>Präpositional</div>
+    </div>
+
+    <div id="info-panel" class="info-panel">
+        <h3 id="info-title">Fall-Name</h3>
+        <p id="info-desc">Erklärung</p>
+        <div class="example-box" id="info-ex">Beispielsatz</div>
+    </div>
+</div>
+
+<script>
+    const caseData = {
+        nom: {
+            title: "Именительный падеж (Nominativ)",
+            desc: "Grundform für Mengen. МНОГО bleibt unverändert. Das Substantiv folgt im Genitiv Plural.",
+            ex: "Здесь много людей. (Hier sind viele Menschen.)"
+        },
+        gen: {
+            title: "Родительный падеж (Genitiv)",
+            desc: "Da МНОГО nicht beugbar ist, nutzt man im Genitiv (z.B. nach 'нет') die Phrase 'большое количество'.",
+            ex: "Тут нет большого количества людей. (Hier gibt es keine große Anzahl an Leuten.)"
+        },
+        dat: {
+            title: "Дательный падеж (Dativ)",
+            desc: "Hier wechselt man entweder zur Form 'многим' (von многие) oder zur Phrase 'большому количеству'.",
+            ex: "Мы позвонили многим друзьям / большому количеству людей."
+        },
+        acc: {
+            title: "Винительный падеж (Akkusativ)",
+            desc: "Unbelebt: 'много'. Belebt (Personen): 'многих' oder 'большое количество'.",
+            ex: "Я вижу много книг (unbelebt). Я знаю многих врачей (belebt)."
+        },
+        ins: {
+            title: "Творительный падеж (Instrumental)",
+            desc: "Man verwendet 'многими' oder die Ersatzphrase 'большим количеством'.",
+            ex: "Мы работаем со многими коллегами / с большим количеством людей."
+        },
+        pre: {
+            title: "Предложный падеж (Präpositional)",
+            desc: "Nach Präpositionen (z.B. 'о' - über) verwendet man immer die Form 'многих'.",
+            ex: "Он рассказал о многих интересных вещах. (Er erzählte von vielen interessanten Dingen.)"
+        }
+    };
+
+    function showDetails(caseKey, element) {
+        const panel = document.getElementById('info-panel');
+        const title = document.getElementById('info-title');
+        const desc = document.getElementById('info-desc');
+        const ex = document.getElementById('info-ex');
+
+        // Bubbles-Status aktualisieren
+        document.querySelectorAll('.case-bubble').forEach(b => b.classList.remove('active'));
+        element.classList.add('active');
+
+        // Inhalt füllen
+        const data = caseData[caseKey];
+        title.innerText = data.title;
+        desc.innerText = data.desc;
+        ex.innerText = data.ex;
+
+        // Panel einblenden
+        panel.style.display = 'block';
+        
+        // Sanftes Scrollen zum Panel bei Mobilgeräten
+        if (window.innerWidth < 768) {
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+</script>
+
+</body>
+</html>
