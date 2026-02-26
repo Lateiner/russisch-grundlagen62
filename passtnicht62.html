@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Grammatik: Odd One Out</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Keine Kursivschrift */
+        * { font-style: normal !important; }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary-color); }
+
+        .explanation {
+            background: #fff3e0;
+            padding: 20px;
+            border-left: 6px solid #ff9800;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-card {
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: #fff;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            color: var(--primary-color);
+        }
+
+        .option-btn:hover {
+            border-color: var(--secondary-color);
+            background-color: #f0f7ff;
+        }
+
+        /* Status-Farben: Hier ist das Ziel, den FEHLER zu finden */
+        .is-correct-choice {
+            background-color: var(--success-color) !important;
+            color: white !important;
+            border-color: var(--success-color) !important;
+        }
+
+        .is-wrong-choice {
+            background-color: var(--error-color) !important;
+            color: white !important;
+            border-color: var(--error-color) !important;
+        }
+
+        .button-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            border-top: 2px solid #eee;
+            padding-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .main-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .btn-reset { background: #e67e22; }
+        .btn-solution { background: var(--secondary-color); }
+
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Odd One Out: Was passt NICHT?</h2>
+
+    <div class="explanation">
+        <strong>Anleitung:</strong> In jeder Gruppe finden Sie vier russische Phrasen. Drei davon sind grammatikalisch korrekt, aber <strong>eine ist unmöglich oder falsch</strong>. 
+        Klicken Sie auf die falsche Konstruktion, um sie zu identifizieren.
+    </div>
+
+    <div id="exercise-list">
+        <!-- Aufgaben werden per JS generiert -->
+    </div>
+
+    <div class="button-bar">
+        <button class="main-btn btn-reset" onclick="shuffleAndRender()">Zurücksetzen und mischen</button>
+        <button class="main-btn btn-solution" onclick="showAllSolutions()">Fehler aufdecken</button>
+    </div>
+</div>
+
+<script>
+    const taskData = [
+        { id: 1, options: ["много книг", "многие книги", "с много книгами", "многим книгам"], wrong: "с много книгами" },
+        { id: 2, options: ["о многих людях", "о большом количестве людей", "о много людях", "многих людей"], wrong: "о много людях" },
+        { id: 3, options: ["многим друзьям", "большому количеству друзей", "много друзьям", "многих друзей"], wrong: "много друзьям" },
+        { id: 4, options: ["со многими вещами", "с большим количеством вещей", "с много вещами", "многими вещами"], wrong: "с много вещами" },
+        { id: 5, options: ["вижу многих людей", "вижу много людей", "вижу многие людей", "вижу большое количество людей"], wrong: "вижу многие людей" },
+        { id: 6, options: ["во многих странах", "в большом количестве стран", "в много странах", "многих стран"], wrong: "в много странах" },
+        { id: 7, options: ["много интересных книг", "многие интересные книги", "многие интересных книг", "большое количество интересных книг"], wrong: "многие интересных книг" },
+        { id: 8, options: ["много хороших врачей", "многие хорошие врачи", "многих хороших врачей", "многие хороших врачей"], wrong: "многие хороших врачей" },
+        { id: 9, options: ["у многих студентов", "у большого количества студентов", "у много студентов", "многих студентов"], wrong: "у много студентов" },
+        { id: 10, options: ["к многим учителям", "к большому количеству учителей", "к много учителям", "многим учителям"], wrong: "к много учителям" }
+    ];
+
+    function shuffleAndRender() {
+        const list = document.getElementById('exercise-list');
+        list.innerHTML = '';
+        
+        // Aufgaben mischen
+        const shuffledTasks = [...taskData].sort(() => Math.random() - 0.5);
+
+        shuffledTasks.forEach((task, index) => {
+            const card = document.createElement('div');
+            card.className = 'exercise-card';
+            
+            let html = `<div style="margin-bottom: 10px; font-weight: bold; color: var(--secondary-color);">Aufgabe ${index + 1}</div>`;
+            html += `<div class="options-grid">`;
+
+            // Optionen innerhalb der Aufgabe mischen
+            const shuffledOptions = [...task.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(opt => {
+                html += `
+                    <button class="option-btn" 
+                            data-is-wrong="${opt === task.wrong}" 
+                            onclick="checkChoice(this)">
+                        ${opt}
+                    </button>
+                `;
+            });
+
+            html += `</div>`;
+            card.innerHTML = html;
+            list.appendChild(card);
+        });
+    }
+
+    window.checkChoice = function(btn) {
+        const isCorrectTarget = btn.getAttribute('data-is-wrong') === "true";
+        const parent = btn.parentElement;
+        const buttons = parent.querySelectorAll('.option-btn');
+
+        // Reset für diese Karte
+        buttons.forEach(b => b.classList.remove('is-correct-choice', 'is-wrong-choice'));
+
+        if (isCorrectTarget) {
+            btn.classList.add('is-correct-choice');
+        } else {
+            btn.classList.add('is-wrong-choice');
+        }
+    };
+
+    window.showAllSolutions = function() {
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('is-correct-choice', 'is-wrong-choice');
+            if (btn.getAttribute('data-is-wrong') === "true") {
+                btn.classList.add('is-correct-choice');
+            }
+        });
+    };
+
+    // Initialer Start
+    document.addEventListener('DOMContentLoaded', shuffleAndRender);
+</script>
+
+</body>
+</html>
