@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Grammatik: Kasus-Matching</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        h1, h2 { text-align: center; color: var(--primary-color); margin-bottom: 10px; }
+
+        .instruction {
+            background: #e9f2fb;
+            padding: 15px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        /* Matching Area */
+        .matching-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            margin: 40px 0;
+            touch-action: none; /* Verhindert Scrolling beim Ziehen */
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 40%;
+            z-index: 2;
+        }
+
+        .match-item {
+            padding: 15px;
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .match-item:hover { border-color: var(--secondary-color); }
+        .match-item.selected { border-color: var(--secondary-color); background-color: #e3f2fd; }
+
+        /* SVG Overlay für Linien */
+        #line-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .line {
+            stroke-width: 3;
+            fill: none;
+            transition: stroke 0.3s;
+        }
+
+        /* Buttons */
+        .button-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            color: white;
+        }
+
+        .btn-reset { background: #6c757d; }
+        .btn-solution { background: var(--secondary-color); }
+        button:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .match-item { padding: 10px; font-size: 0.85rem; }
+            .column { width: 45%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Kasus-Matching: МНОГИЕ & Co.</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Verbinden Sie die Substantive in der linken Spalte mit der grammatikalisch korrekten Form in der rechten Spalte. 
+        Klicken Sie zuerst ein Wort links und dann das passende Wort rechts an (oder ziehen Sie eine Linie).
+        Beachten Sie: „БОЛЬШОЕ КОЛИЧЕСТВО“ ersetzt „МНОГО“ in indirekten Fällen bei Mengenangaben.
+    </div>
+
+    <div class="matching-wrapper" id="matching-area">
+        <svg id="line-svg"></svg>
+        
+        <!-- Linke Spalte: Substantive -->
+        <div class="column" id="left-col">
+            <div class="match-item" data-id="1" data-match="dativ">врачам</div>
+            <div class="match-item" data-id="2" data-match="menge">людей</div>
+            <div class="match-item" data-id="3" data-match="prep">вещах</div>
+            <div class="match-item" data-id="4" data-match="instr">людьми</div>
+            <div class="match-item" data-id="5" data-match="menge">ошибок</div>
+            <div class="match-item" data-id="6" data-match="prep">ситуациях</div>
+        </div>
+
+        <!-- Rechte Spalte: Quantifikatoren -->
+        <div class="column" id="right-col">
+            <div class="match-item" data-type="prep">многих</div>
+            <div class="match-item" data-type="instr">многими</div>
+            <div class="match-item" data-type="dativ">многим</div>
+            <div class="match-item" data-type="menge">большое количество</div>
+        </div>
+    </div>
+
+    <div class="button-bar">
+        <button class="btn-reset" onclick="resetGame()">Zurücksetzen</button>
+        <button class="btn-solution" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    let selectedLeft = null;
+    let connections = [];
+    const matchingArea = document.getElementById('matching-area');
+    const svg = document.getElementById('line-svg');
+
+    function init() {
+        // Event Listener für Items
+        document.querySelectorAll('#left-col .match-item').forEach(item => {
+            item.addEventListener('click', () => selectLeft(item));
+        });
+        document.querySelectorAll('#right-col .match-item').forEach(item => {
+            item.addEventListener('click', () => selectRight(item));
+        });
+        
+        window.addEventListener('resize', redrawLines);
+    }
+
+    function selectLeft(item) {
+        if (selectedLeft) selectedLeft.classList.remove('selected');
+        selectedLeft = item;
+        item.classList.add('selected');
+    }
+
+    function selectRight(item) {
+        if (!selectedLeft) return;
+
+        // Alte Verbindung für dieses linke Item löschen
+        connections = connections.filter(c => c.left !== selectedLeft);
+        
+        connections.push({
+            left: selectedLeft,
+            right: item,
+            isCorrect: selectedLeft.dataset.match === item.dataset.type
+        });
+
+        selectedLeft.classList.remove('selected');
+        selectedLeft = null;
+        redrawLines();
+    }
+
+    function redrawLines() {
+        svg.innerHTML = '';
+        const rect = matchingArea.getBoundingClientRect();
+
+        connections.forEach(conn => {
+            const lRect = conn.left.getBoundingClientRect();
+            const rRect = conn.right.getBoundingClientRect();
+
+            const x1 = lRect.right - rect.left;
+            const y1 = lRect.top + lRect.height / 2 - rect.top;
+            const x2 = rRect.left - rect.left;
+            const y2 = rRect.top + rRect.height / 2 - rect.top;
+
+            const color = conn.isCorrect ? '#28a745' : '#dc3545';
+            
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('class', 'line');
+            line.setAttribute('stroke', color);
+            svg.appendChild(line);
+        });
+    }
+
+    window.resetGame = function() {
+        connections = [];
+        if (selectedLeft) selectedLeft.classList.remove('selected');
+        selectedLeft = null;
+        redrawLines();
+    };
+
+    window.showSolution = function() {
+        connections = [];
+        const leftItems = document.querySelectorAll('#left-col .match-item');
+        const rightItems = document.querySelectorAll('#right-col .match-item');
+
+        leftItems.forEach(left => {
+            const matchType = left.dataset.match;
+            const right = Array.from(rightItems).find(r => r.dataset.type === matchType);
+            if (right) {
+                connections.push({ left, right, isCorrect: true });
+            }
+        });
+        redrawLines();
+    };
+
+    init();
+</script>
+
+</body>
+</html>
